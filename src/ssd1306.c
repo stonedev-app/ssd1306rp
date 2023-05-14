@@ -53,7 +53,6 @@ bool ssd1306_init(SSD1306Disp *p, uint8_t width, uint8_t height,
     p->address = address;
     p->i2c_i = i2c_instance;
     p->bufsize = (p->pages) * (p->width);
-    p->bufsize = (p->pages) * (p->width);
     if ((p->buffer = malloc(p->bufsize + 1)) == NULL)
     {
         p->bufsize = 0;
