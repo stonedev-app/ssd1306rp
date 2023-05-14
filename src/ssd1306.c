@@ -121,9 +121,9 @@ void ssd1306_show(SSD1306Disp *p)
     ssd1306_send_buf(p);
 }
 
-void ssd1306_set_pixel(SSD1306Disp *p, uint8_t x, uint8_t y, bool on)
+void ssd1306_set_pixel(SSD1306Disp *p, int x, int y, bool on)
 {
-    if (x >= p->width || y >= p->height)
+    if (x < 0 || p->width <= x || y < 0 || p->height <= y)
         return;
 
     const int BytesPerRow = p->width; // x pixels, 1bpp, but each row is 8 pixel high, so (x / 8) * 8

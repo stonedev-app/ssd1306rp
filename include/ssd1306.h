@@ -27,6 +27,6 @@ bool ssd1306_init(SSD1306Disp *p, uint8_t width, uint8_t height,
 void ssd1306_deinit(SSD1306Disp *p);
 void ssd1306_clear(SSD1306Disp *p);
 void ssd1306_show(SSD1306Disp *p);
-void ssd1306_set_pixel(SSD1306Disp *p, uint8_t x, uint8_t y, bool on);
+void ssd1306_set_pixel(SSD1306Disp *p, int x, int y, bool on);
 
 #endif
