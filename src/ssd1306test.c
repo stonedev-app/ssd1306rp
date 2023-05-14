@@ -32,24 +32,29 @@ int main()
     // init
     ssd1306_init(&disp, SSD1306_WIDTH_128, SSD1306_HEIGHT_64,
                  I2C_SSD1306_ADDRESS, I2C_PORT);
-    ssd1306_clear(&disp);
-    ssd1306_show(&disp);
-    sleep_ms(1000);
 
-    // draw pixel
-    ssd1306_set_pixel(&disp, 10, 10, true);
-    ssd1306_show(&disp);
-    sleep_ms(1000);
+    while (true)
+    {
+        // clear
+        ssd1306_clear(&disp);
+        ssd1306_show(&disp);
+        sleep_ms(1000);
 
-    // draw line
-    ssd1306_draw_line(&disp, 20, 20, 100, 20, true);
-    ssd1306_show(&disp);
-    sleep_ms(1000);
+        // draw pixel
+        ssd1306_set_pixel(&disp, 10, 10, true);
+        ssd1306_show(&disp);
+        sleep_ms(1000);
 
-    // draw char
-    ssd1306_write_string(&disp, 20, 32, "Hello World");
-    ssd1306_show(&disp);
-    sleep_ms(1000);
+        // draw line
+        ssd1306_draw_line(&disp, 20, 20, 100, 20, true);
+        ssd1306_show(&disp);
+        sleep_ms(1000);
+
+        // draw char
+        ssd1306_write_string(&disp, 20, 32, "Hello World");
+        ssd1306_show(&disp);
+        sleep_ms(1000);
+    }
 
     return 0;
 }
