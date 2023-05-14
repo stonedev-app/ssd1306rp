@@ -1,4 +1,5 @@
 #include "ssd1306.h"
+#include "ssd1306_font.h"
 
 // commands (see datasheet)
 #define SSD1306_SET_MEM_MODE _u(0x20)
@@ -33,9 +34,15 @@
 #define SSD1306_WRITE_MODE _u(0xFE)
 #define SSD1306_READ_MODE _u(0xFF)
 
-static void ssd1306_send_cmd(SSD1306Disp *p, uint8_t cmd);
-static void ssd1306_send_cmd_list(SSD1306Disp *p, uint8_t *buf, int num);
-static void ssd1306_send_buf(SSD1306Disp *p);
+static uint8_t reversed[sizeof(font)] = {0};
+
+static void send_cmd(SSD1306Disp *p, uint8_t cmd);
+static void send_cmd_list(SSD1306Disp *p, uint8_t *buf, int num);
+static void send_buf(SSD1306Disp *p);
+static void write_char(SSD1306Disp *p, int x, int y, uint8_t ch);
+static int get_font_index(uint8_t ch);
+static uint8_t reverse(uint8_t b);
+static void fill_reversed_cache();
 
 bool ssd1306_init(SSD1306Disp *p, uint8_t width, uint8_t height,
                   uint8_t address, i2c_inst_t *i2c_instance)
@@ -92,7 +99,7 @@ bool ssd1306_init(SSD1306Disp *p, uint8_t width, uint8_t height,
         SSD1306_SET_DISP | 0x01,   // turn display on
     };
 
-    ssd1306_send_cmd_list(p, cmds, count_of(cmds));
+    send_cmd_list(p, cmds, count_of(cmds));
 
     return true;
 }
@@ -117,8 +124,8 @@ void ssd1306_show(SSD1306Disp *p)
         0,
         p->pages - 1};
 
-    ssd1306_send_cmd_list(p, cmds, count_of(cmds));
-    ssd1306_send_buf(p);
+    send_cmd_list(p, cmds, count_of(cmds));
+    send_buf(p);
 }
 
 void ssd1306_set_pixel(SSD1306Disp *p, int x, int y, bool on)
@@ -169,7 +176,20 @@ void ssd1306_draw_line(SSD1306Disp *p, int x0, int y0, int x1, int y1, bool on)
     }
 }
 
-static void ssd1306_send_cmd(SSD1306Disp *p, uint8_t cmd)
+void ssd1306_write_string(SSD1306Disp *p, int x, int y, char *str)
+{
+    // Cull out any string off the screen
+    if (x > p->width - 8 || y > p->height - 8)
+        return;
+
+    while (*str)
+    {
+        write_char(p, x, y, *str++);
+        x += 8;
+    }
+}
+
+static void send_cmd(SSD1306Disp *p, uint8_t cmd)
 {
     // I2C write process expects a control byte followed by data
     // this "data" can be a command or data to follow up a command
@@ -178,15 +198,61 @@ static void ssd1306_send_cmd(SSD1306Disp *p, uint8_t cmd)
     i2c_write_blocking(p->i2c_i, (p->address & SSD1306_WRITE_MODE), buf, 2, false);
 }
 
-static void ssd1306_send_cmd_list(SSD1306Disp *p, uint8_t *buf, int num)
+static void send_cmd_list(SSD1306Disp *p, uint8_t *buf, int num)
 {
     for (int i = 0; i < num; i++)
-        ssd1306_send_cmd(p, buf[i]);
+        send_cmd(p, buf[i]);
 }
 
-static void ssd1306_send_buf(SSD1306Disp *p)
+static void send_buf(SSD1306Disp *p)
 {
     *(p->buffer - 1) = 0x40;
     i2c_write_blocking(p->i2c_i, (p->address & SSD1306_WRITE_MODE),
                        p->buffer - 1, p->bufsize + 1, false);
+}
+
+static void write_char(SSD1306Disp *p, int x, int y, uint8_t ch)
+{
+    if (reversed[0] == 0)
+        fill_reversed_cache();
+
+    if (x > p->width - 8 || y > p->height - 8)
+        return;
+
+    // For the moment, only write on Y row boundaries (every 8 vertical pixels)
+    y = y / 8;
+
+    ch = toupper(ch);
+    int idx = get_font_index(ch);
+    int fb_idx = y * p->width + x;
+
+    for (int i = 0; i < 8; i++)
+    {
+        *(p->buffer + fb_idx++) = reversed[idx * 8 + i];
+    }
+}
+
+static int get_font_index(uint8_t ch) {
+    if (ch >= 'A' && ch <='Z') {
+        return  ch - 'A' + 1;
+    }
+    else if (ch >= '0' && ch <='9') {
+        return  ch - '0' + 27;
+    }
+    else return  0; // Not got that char so space.
+}
+
+static uint8_t reverse(uint8_t b)
+{
+    b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
+    b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
+    b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
+    return b;
+}
+
+static void fill_reversed_cache()
+{
+    // calculate and cache a reversed version of fhe font, because I defined it upside down...doh!
+    for (int i = 0; i < sizeof(font); i++)
+        reversed[i] = reverse(font[i]);
 }

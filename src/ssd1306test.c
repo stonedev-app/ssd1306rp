@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include "pico/stdlib.h"
 #include "pico/binary_info.h"
 #include "hardware/i2c.h"
@@ -28,7 +29,7 @@ int main()
 
     SSD1306Disp disp;
 
-    // run through the complete initialization process
+    // init
     ssd1306_init(&disp, SSD1306_WIDTH_128, SSD1306_HEIGHT_64,
                  I2C_SSD1306_ADDRESS, I2C_PORT);
     ssd1306_clear(&disp);
@@ -42,6 +43,11 @@ int main()
 
     // draw line
     ssd1306_draw_line(&disp, 20, 20, 100, 20, true);
+    ssd1306_show(&disp);
+    sleep_ms(1000);
+
+    // draw char
+    ssd1306_write_string(&disp, 20, 32, "Hello World");
     ssd1306_show(&disp);
     sleep_ms(1000);
 

@@ -29,5 +29,6 @@ void ssd1306_clear(SSD1306Disp *p);
 void ssd1306_show(SSD1306Disp *p);
 void ssd1306_set_pixel(SSD1306Disp *p, int x, int y, bool on);
 void ssd1306_draw_line(SSD1306Disp *p, int x0, int y0, int x1, int y1, bool on);
+void ssd1306_write_string(SSD1306Disp *p, int x, int y, char *str);
 
 #endif
