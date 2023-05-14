@@ -139,6 +139,36 @@ void ssd1306_set_pixel(SSD1306Disp *p, int x, int y, bool on)
     *(p->buffer + byte_idx) = byte;
 }
 
+void ssd1306_draw_line(SSD1306Disp *p, int x0, int y0, int x1, int y1, bool on)
+{
+
+    int dx = abs(x1 - x0);
+    int sx = x0 < x1 ? 1 : -1;
+    int dy = -abs(y1 - y0);
+    int sy = y0 < y1 ? 1 : -1;
+    int err = dx + dy;
+    int e2;
+
+    while (true)
+    {
+        ssd1306_set_pixel(p, x0, y0, on);
+        if (x0 == x1 && y0 == y1)
+            break;
+        e2 = 2 * err;
+
+        if (e2 >= dy)
+        {
+            err += dy;
+            x0 += sx;
+        }
+        if (e2 <= dx)
+        {
+            err += dx;
+            y0 += sy;
+        }
+    }
+}
+
 static void ssd1306_send_cmd(SSD1306Disp *p, uint8_t cmd)
 {
     // I2C write process expects a control byte followed by data

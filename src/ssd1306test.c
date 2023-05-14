@@ -35,7 +35,13 @@ int main()
     ssd1306_show(&disp);
     sleep_ms(1000);
 
+    // draw pixel
     ssd1306_set_pixel(&disp, 10, 10, true);
+    ssd1306_show(&disp);
+    sleep_ms(1000);
+
+    // draw line
+    ssd1306_draw_line(&disp, 20, 20, 100, 20, true);
     ssd1306_show(&disp);
     sleep_ms(1000);
 
