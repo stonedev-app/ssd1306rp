@@ -195,7 +195,7 @@ static void send_cmd(SSD1306Disp *p, uint8_t cmd)
     // this "data" can be a command or data to follow up a command
     // Co = 1, D/C = 0 => the driver expects a command
     uint8_t buf[2] = {0x80, cmd};
-    i2c_write_blocking(p->i2c_i, (p->address & SSD1306_WRITE_MODE), buf, 2, false);
+    i2c_write_blocking(p->i2c_i, (p->address & SSD1306_WRITE_MODE), buf, count_of(buf), false);
 }
 
 static void send_cmd_list(SSD1306Disp *p, uint8_t *buf, int num)
