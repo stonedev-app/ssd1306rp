@@ -1,5 +1,5 @@
-#ifndef SSD1306_H
-#define SSD1306_H
+#ifndef __SSD1306_RP_H
+#define __SSD1306_RP_H
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -14,37 +14,37 @@ if (PICO_SDK_VERSION_STRING VERSION_LESS "1.4.0")
   message(FATAL_ERROR "Raspberry Pi Pico SDK version 1.4.0 (or later) required. Your version is ${PICO_SDK_VERSION_STRING}")
 endif()
 
-project(ssd1306test C CXX ASM)
+project(ssd1306rp C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(ssd1306test
-  src/ssd1306test.c
-  src/ssd1306.c
+add_executable(ssd1306rp
+  src/ssd1306rpTest.c
+  src/ssd1306rp.c
 )
 
-pico_set_program_name(ssd1306test "ssd1306test")
-pico_set_program_version(ssd1306test "0.1")
+pico_set_program_name(ssd1306rp "ssd1306rp")
+pico_set_program_version(ssd1306rp "0.1")
 
-pico_enable_stdio_uart(ssd1306test 1)
-pico_enable_stdio_usb(ssd1306test 0)
+pico_enable_stdio_uart(ssd1306rp 1)
+pico_enable_stdio_usb(ssd1306rp 0)
 
 # Add the standard library to the build
-target_link_libraries(ssd1306test
+target_link_libraries(ssd1306rp
         pico_stdlib)
 
 # Add the standard include files to the build
-target_include_directories(ssd1306test PRIVATE
+target_include_directories(ssd1306rp PRIVATE
   include/
 )
 
 # Add any user requested libraries
-target_link_libraries(ssd1306test 
+target_link_libraries(ssd1306rp 
         hardware_i2c
         )
 
-pico_add_extra_outputs(ssd1306test)
+pico_add_extra_outputs(ssd1306rp)
 

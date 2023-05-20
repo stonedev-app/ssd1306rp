@@ -4,7 +4,7 @@
 #include "pico/binary_info.h"
 #include "hardware/i2c.h"
 
-#include "ssd1306.h"
+#include "ssd1306rp.h"
 
 #define I2C_SDA 8
 #define I2C_SCL 9

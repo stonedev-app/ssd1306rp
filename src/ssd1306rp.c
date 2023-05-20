@@ -1,5 +1,5 @@
-#include "ssd1306.h"
-#include "ssd1306_font.h"
+#include "ssd1306rp.h"
+#include "ssd1306rp_font.h"
 
 // commands (see datasheet)
 #define SSD1306_SET_MEM_MODE _u(0x20)
