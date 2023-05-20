@@ -1,0 +1,41 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "cmake",
+            "label": "CMake: build ssd1306rp",
+            "command": "build",
+            "targets": [
+                "ssd1306rp"
+            ],
+            "group": "build",
+            "detail": "CMake ssd1306rp build task"
+        },
+        {
+            "type": "shell",
+            "label": "OpenOCD: upload ssd1306rp",
+            "command": "${env:OPEN_OCD_PATH}",
+            "args": [
+                "-f",
+                "interface/cmsis-dap.cfg",
+                "-f",
+                "target/rp2040.cfg",
+                "-s",
+                "${env:OPEN_OCD_TCL_PATH}",
+                "-c",
+                "\"program ${command:cmake.launchTargetPath} verify reset exit\""
+            ],
+            "options": {
+                "cwd": "${workspaceRoot}/build"
+            },
+            "dependsOn":["CMake: build ssd1306rp"],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "OpenOCD ssd1306rp upload task",
+        },
+    ]
+}
