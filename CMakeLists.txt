@@ -22,7 +22,7 @@ pico_sdk_init()
 # Add executable. Default name is the project name, version 0.1
 
 add_executable(ssd1306rp
-  src/ssd1306rpTest.c
+  src/ssd1306rpExample.c
   src/ssd1306rp.c
 )
 
