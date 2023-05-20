@@ -134,13 +134,13 @@ void ssd1306_set_pixel(SSD1306Disp *p, int x, int y, bool on)
 
     const int BytesPerRow = p->width; // x pixels, 1bpp, but each row is 8 pixel high, so (x / 8) * 8
 
-    int byte_idx = (y / 8) * BytesPerRow + x;
+    int byte_idx = (y / SSD1306_PAGE_HEIGHT) * BytesPerRow + x;
     uint8_t byte = *(p->buffer + byte_idx);
 
     if (on)
-        byte |= 1 << (y % 8);
+        byte |= 1 << (y % SSD1306_PAGE_HEIGHT);
     else
-        byte &= ~(1 << (y % 8));
+        byte &= ~(1 << (y % SSD1306_PAGE_HEIGHT));
 
     *(p->buffer + byte_idx) = byte;
 }
@@ -218,27 +218,43 @@ static void write_char(SSD1306Disp *p, int x, int y, uint8_t ch)
     if (x > p->width - 8 || y > p->height - 8)
         return;
 
-    // For the moment, only write on Y row boundaries (every 8 vertical pixels)
-    y = y / 8;
+    // Corresponds to each 1 pixel of writing in Y column
+    int page = y / SSD1306_PAGE_HEIGHT;
+    // Obtain the remainder and use it for shift operations
+    int y_mod = y % SSD1306_PAGE_HEIGHT;
 
     ch = toupper(ch);
     int idx = get_font_index(ch);
-    int fb_idx = y * p->width + x;
+    int fb_idx = page * p->width + x;
 
     for (int i = 0; i < 8; i++)
     {
-        *(p->buffer + fb_idx++) = reversed[idx * 8 + i];
+        *(p->buffer + fb_idx) =
+            *(p->buffer + fb_idx) | (reversed[idx * 8 + i] << y_mod);
+        // If the page is crossed
+        if (y_mod != 0)
+        {
+            // Draw the overflow on the next page
+            *(p->buffer + fb_idx + p->width) =
+                *(p->buffer + fb_idx + p->width) |
+                (reversed[idx * 8 + i] >> (SSD1306_PAGE_HEIGHT - y_mod));
+        }
+        fb_idx++;
     }
 }
 
-static int get_font_index(uint8_t ch) {
-    if (ch >= 'A' && ch <='Z') {
-        return  ch - 'A' + 1;
+static int get_font_index(uint8_t ch)
+{
+    if (ch >= 'A' && ch <= 'Z')
+    {
+        return ch - 'A' + 1;
     }
-    else if (ch >= '0' && ch <='9') {
-        return  ch - '0' + 27;
+    else if (ch >= '0' && ch <= '9')
+    {
+        return ch - '0' + 27;
     }
-    else return  0; // Not got that char so space.
+    else
+        return 0; // Not got that char so space.
 }
 
 static uint8_t reverse(uint8_t b)
