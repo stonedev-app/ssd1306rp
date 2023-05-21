@@ -34,15 +34,11 @@
 #define SSD1306_WRITE_MODE _u(0xFE)
 #define SSD1306_READ_MODE _u(0xFF)
 
-static uint8_t reversed[sizeof(font)] = {0};
-
 static void send_cmd(SSD1306Disp *p, uint8_t cmd);
 static void send_cmd_list(SSD1306Disp *p, uint8_t *buf, int num);
 static void send_buf(SSD1306Disp *p);
 static void write_char(SSD1306Disp *p, int x, int y, uint8_t ch);
 static int get_font_index(uint8_t ch);
-static uint8_t reverse(uint8_t b);
-static void fill_reversed_cache();
 
 bool ssd1306_init(SSD1306Disp *p, uint8_t width, uint8_t height,
                   uint8_t address, i2c_inst_t *i2c_instance)
@@ -212,9 +208,6 @@ static void send_buf(SSD1306Disp *p)
 
 static void write_char(SSD1306Disp *p, int x, int y, uint8_t ch)
 {
-    if (reversed[0] == 0)
-        fill_reversed_cache();
-
     if (x > p->width - 8 || y > p->height - 8)
         return;
 
@@ -223,21 +216,20 @@ static void write_char(SSD1306Disp *p, int x, int y, uint8_t ch)
     // Obtain the remainder and use it for shift operations
     int y_mod = y % SSD1306_PAGE_HEIGHT;
 
-    ch = toupper(ch);
     int idx = get_font_index(ch);
     int fb_idx = page * p->width + x;
 
     for (int i = 0; i < 8; i++)
     {
         *(p->buffer + fb_idx) =
-            *(p->buffer + fb_idx) | (reversed[idx * 8 + i] << y_mod);
+            *(p->buffer + fb_idx) | (ssd1306_font_8x8[idx * 8 + i] << y_mod);
         // If the page is crossed
         if (y_mod != 0)
         {
             // Draw the overflow on the next page
             *(p->buffer + fb_idx + p->width) =
                 *(p->buffer + fb_idx + p->width) |
-                (reversed[idx * 8 + i] >> (SSD1306_PAGE_HEIGHT - y_mod));
+                (ssd1306_font_8x8[idx * 8 + i] >> (SSD1306_PAGE_HEIGHT - y_mod));
         }
         fb_idx++;
     }
@@ -245,29 +237,10 @@ static void write_char(SSD1306Disp *p, int x, int y, uint8_t ch)
 
 static int get_font_index(uint8_t ch)
 {
-    if (ch >= 'A' && ch <= 'Z')
+    if (ch >= ' ' && ch <= '~')
     {
-        return ch - 'A' + 1;
-    }
-    else if (ch >= '0' && ch <= '9')
-    {
-        return ch - '0' + 27;
+        return ch - ' ';
     }
     else
         return 0; // Not got that char so space.
-}
-
-static uint8_t reverse(uint8_t b)
-{
-    b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
-    b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
-    b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
-    return b;
-}
-
-static void fill_reversed_cache()
-{
-    // calculate and cache a reversed version of fhe font, because I defined it upside down...doh!
-    for (int i = 0; i < sizeof(font); i++)
-        reversed[i] = reverse(font[i]);
 }

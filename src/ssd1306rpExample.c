@@ -51,7 +51,7 @@ int main()
         sleep_ms(1000);
 
         // draw char
-        ssd1306_write_string(&disp, 20, 32, "Hello World");
+        ssd1306_write_string(&disp, 20, 32, "Hello World.");
         ssd1306_show(&disp);
         sleep_ms(1000);
     }
